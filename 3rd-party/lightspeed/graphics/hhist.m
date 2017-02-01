@@ -33,7 +33,7 @@ seconddup = (dd2 > 0);
 lastdup = (dd < 0);
 nodup = (dd == 0 & d == 0);
 % set the second occurrence to be the next larger double-precision number.
-data(seconddup) = data(seconddup) + eps(data(seconddup));
+data(seconddup) = data(seconddup) + 3*eps(data(seconddup));
 dstart = find(firstdup | seconddup | nodup);
 dend = find(firstdup | lastdup | nodup);
 data = data(dstart);

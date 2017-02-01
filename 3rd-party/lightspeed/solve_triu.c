@@ -35,8 +35,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
 		 int nrhs, const mxArray *prhs[])
 {
   mwSize m,n;
-	ptrdiff_t m64, n64;
-#ifndef BLAS64
+#ifdef BLAS64
+	ptrdiff_t im, in;
+#else
 	int im,in;
 #endif
   double *T,*b,*x;
@@ -78,9 +79,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
   memcpy(x,b,m*n*sizeof(double));
   b = x;
 #ifdef BLAS64
-	m64 = m;
-	n64 = n;
-  dtrsm(&side,&uplo,&trans,&diag,&m64,&n64,&one,T,&m64,x,&m64);
+	im = (ptrdiff_t)m;
+	in = (ptrdiff_t)n;
+  dtrsm(&side,&uplo,&trans,&diag,&im,&in,&one,T,&im,x,&im);
 #else
 	im = (int)m;
 	in = (int)n;

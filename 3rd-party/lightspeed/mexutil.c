@@ -7,7 +7,7 @@ mxArray *mxCreateNumericArrayE(mwSize ndim, const mwSize *dims,
 {
   mxArray *a;
   mwSize i;
-  mwSize *dims1 = mxMalloc(ndim*sizeof(mwSize));
+  mwSize *dims1 = (mwSize *)mxMalloc(ndim*sizeof(mwSize));
   mwSize sz = 1;
   for(i=0;i<ndim;i++) {
     sz *= dims[i];
@@ -19,7 +19,7 @@ mxArray *mxCreateNumericArrayE(mwSize ndim, const mwSize *dims,
   mxFree(dims1);
   mxSetData(a, mxRealloc(mxGetData(a), sz));
   if(ComplexFlag == mxCOMPLEX) {
-    mxSetPi(a, mxRealloc(mxGetPi(a),sz));
+    mxSetPi(a, (double*)mxRealloc(mxGetPi(a),sz));
   }
   return a;
 }
@@ -30,9 +30,9 @@ mxArray *mxCreateNumericMatrixE(mwSize m, mwSize n, mxClassID classid,
   mxArray *a = mxCreateNumericMatrix(1, 1, classid, ComplexFlag);
   mxSetM(a,m);
   mxSetN(a,n);
-  mxSetPr(a, mxRealloc(mxGetPr(a),sz));
+  mxSetPr(a, (double*)mxRealloc(mxGetPr(a),sz));
   if(ComplexFlag == mxCOMPLEX) {
-    mxSetPi(a, mxRealloc(mxGetPi(a),sz));
+    mxSetPi(a, (double*)mxRealloc(mxGetPi(a),sz));
   }
   return a;
 }

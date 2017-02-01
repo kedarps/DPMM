@@ -6,4 +6,5 @@ GetSeed
 RandN
 GammaRand
 BinoRand
+BinoRand32
 BetaRand

@@ -1,6 +1,6 @@
 % Fastfit Toolbox.  Efficient maximum-likelihood estimation using generalized
 % Newton iterations.
-% Version 1.2  19-May-04
+% Version 1.3
 % By Thomas P. Minka
 %
 % Dirichlet
@@ -27,4 +27,4 @@
 %   randnegbin     - Sample from Negative Binomial.
 %   inv_digamma    - Inverse of the digamma function.
 %
-% test_dirichlet_fit,...   Test scripts for above routines.
+% tests/test_dirichlet_fit,...   Test scripts for above routines.

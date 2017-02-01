@@ -22,3 +22,6 @@ for i=1:cols(x)
     h = [h fill(y(1,:), y(2,:), fill_color, 'EdgeColor', outline_color)];
   end
 end
+if nargout < 1
+	clear h
+end

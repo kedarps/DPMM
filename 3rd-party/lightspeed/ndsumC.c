@@ -16,9 +16,9 @@ void ndsum(double *dest, double *src, mwSize ndim, mwSize *size,
    * mask[i] indicates that dimension i is to be summed out.
    */
   mwSize *masked_size,*cum_masked_size,*advance,*rewind;
-  mwSize *subs = mxCalloc(ndim,sizeof(mwSize));
+  mwSize *subs = (mwSize*)mxCalloc(ndim,sizeof(mwSize));
   mwSize i,j;
-  masked_size = mxCalloc(ndim,sizeof(mwSize));
+  masked_size = (mwSize*)mxCalloc(ndim,sizeof(mwSize));
   for(i=0;i<ndim;i++) {
     masked_size[i] = mask[i] ? 1 : size[i];
   }
@@ -32,9 +32,9 @@ void ndsum(double *dest, double *src, mwSize ndim, mwSize *size,
    * whenever we increment subs[i], and we subtract rewind[i]
    * whenever we set subs[i] back to 0 (from size[i]-1).
    */
-  cum_masked_size = mxCalloc(ndim,sizeof(mwSize));
-  advance = mxCalloc(ndim,sizeof(mwSize));
-  rewind = mxCalloc(ndim,sizeof(mwSize));
+  cum_masked_size = (mwSize*)mxCalloc(ndim,sizeof(mwSize));
+  advance = (mwSize*)mxCalloc(ndim,sizeof(mwSize));
+  rewind = (mwSize*)mxCalloc(ndim,sizeof(mwSize));
   cum_masked_size[0] = 1;
   for(i=0;i<ndim-1;i++) {
     cum_masked_size[i+1] = cum_masked_size[i]*masked_size[i];
@@ -96,11 +96,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
   /* convert dim to a mask. */
   /* mask[i] = 1 if dimension i is to be removed. */
-  mask = mxCalloc(ndim,sizeof(mwSize));
+  mask = (mwSize*)mxCalloc(ndim,sizeof(mwSize));
   /* dimensions in dim are indexed starting from 1. */
   for(i=0;i<nremove;i++) mask[(mwSize)dim[i]-1] = 1;
   /* compute the new size vector. */
-  dest_size = mxCalloc(dest_ndim,sizeof(mwSize));
+  dest_size = (mwSize*)mxCalloc(dest_ndim,sizeof(mwSize));
   j = 0;
   for(i=0;i<ndim;i++) {
     if(!mask[i]) dest_size[j++] = size[i];

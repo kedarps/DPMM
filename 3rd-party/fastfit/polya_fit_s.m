@@ -74,7 +74,7 @@ for iter = 1:10
     plot(e)
     drawnow
   end
-  if ~isfinite(s) | abs(s - old_s) < 1e-6
+  if ~finite(s) | abs(s - old_s) < 1e-6
     break
   end
 end
@@ -88,13 +88,14 @@ end
 
 function s = special_case(s, g, h, c1, c3)
 
-a1 = h.*s.^2 + c1;
-a2 = 2*s.^2.*(h.*s + g);
-a3 = s.^3.*(2*g + h.*s);
+a0 = h.*s.^2 + c1;
+a1 = 2*s.^2.*(h.*s + g);
 if abs(2*g + h.*s) < 1e-13
-  a3 = c3;
+  a2 = c3;
+else
+  a2 = s.^3.*(2*g + h.*s);
 end
-b = quad_roots(a1, a2, a3);
+b = quad_roots(a2, a1, a0);
 a = (g./c1).*((s+b)./b).^2;
 % 1/s = 1/s - a
 s = 1./(1./s - a);

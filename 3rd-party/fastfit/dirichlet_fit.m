@@ -1,4 +1,4 @@
-function [a,run] = dirichlet_fit(data,a)
+function [a,run] = dirichlet_fit(data,a,bar_p)
 % DIRICHLET_FIT   Maximum-likelihood Dirichlet distribution.
 %
 % DIRICHLET_FIT(data) returns the MLE (a) for the matrix DATA.
@@ -13,9 +13,12 @@ function [a,run] = dirichlet_fit(data,a)
 
 % Written by Tom Minka
 
-bar_p = mean(log(data));
-[N,K] = size(data);
-addflops(numel(data)*(flops_exp + 1));
+%[N,K] = size(data);
+if nargin < 3
+  bar_p = mean(log(data));
+  addflops(numel(data)*(flops_exp + 1));
+end
+K = length(bar_p);
 if nargin < 2
   a = dirichlet_moment_match(data);
   %s = dirichlet_initial_s(a,bar_p);
@@ -34,7 +37,7 @@ if s <= 0
   s = 1;
 end
 for iter = 1:100
-  old_s = s;
+  old_a = a;
   % time for fit_s is negligible compared to fit_m
   a = dirichlet_fit_s(data, a, bar_p);
   s = sum(a);
@@ -42,10 +45,10 @@ for iter = 1:100
   m = a/s;
   addflops(2*K-1);
   if nargout > 1
-    run.e(iter) = N*dirichlet_logProb_fast(a, bar_p);
+    run.e(iter) = dirichlet_logProb_fast(a, bar_p);
     run.flops(iter) = flops;
   end
-  if abs(s - old_s) < 1e-4
+  if abs(a - old_a) < 1e-4
     break
   end
 end

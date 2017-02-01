@@ -98,7 +98,7 @@ if ~isstruct(color)
     end
   end
 else
-  fields = fields(ismember(fields, fieldnames(color)));
+  %fields = fields(ismember(fields, fieldnames(color)));
 end
 if isempty(labels)
   labels = fields;
@@ -115,7 +115,11 @@ for f = fields'
     thisx = x;
   end
   thisy = y.(field);
-  thiscolor = color.(field);
+	if ~isfield(color,field)
+		thiscolor = 'k';
+	else
+		thiscolor = color.(field);
+	end
   if ischar(thiscolor)
     h(end+1) = feval(plotfun,thisx,thisy,thiscolor);
     hold on
@@ -136,7 +140,7 @@ for f = fields'
 end
 hold off
 axis_pct;
-legend(h,labels)
+legend(h,labels,'location','best')
 if mobile_flag
   legend off
   hlab = mobile_text(labels{:});

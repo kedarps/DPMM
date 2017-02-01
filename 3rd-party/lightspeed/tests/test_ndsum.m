@@ -23,5 +23,5 @@ plot(tim)
 xlabel('trial')
 ylabel('time (sec)')
 %legend('ndsum', 'ndsumC', 'sum', 2)
-legend('ndsum', 'ndsumC', 2)
+legend('ndsum', 'ndsumC', 'Location','best')
 axis_pct

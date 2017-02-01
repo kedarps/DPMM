@@ -25,7 +25,9 @@ gcc -Wall -I/cygdrive/c/Program\ Files/MATLAB/R2008a/extern/include -c repmat.c
  */
 void memrep(char *dest, mwSize chunk, mwSize rep)
 {
-  /* printf("chunk = %d, rep = %d\n", chunk, rep); */
+  /*
+  printf("chunk = %ld, rep = %ld\n", chunk, rep);
+  */
   if(chunk >= 1024) {
     /* big chunks */
     mwSize i;
@@ -33,7 +35,7 @@ void memrep(char *dest, mwSize chunk, mwSize rep)
     for(i=1;i<rep;i++) {
       p += chunk;
       memcpy(p, dest, chunk);
-      /* could also use: memcpy(p, p-chunk, chunk); */
+				/* memcpy(p, p-chunk, chunk); */
     }
   } else {
     /* small chunks */
@@ -48,12 +50,22 @@ void memrep(char *dest, mwSize chunk, mwSize rep)
   }
 }
 
-void repmat(char *dest, const char *src, int ndim, mwSize *destdimsize, 
+/*
+ * ndim = 1 + the dimension to repeat
+ * dims = dimensions of the source array
+ * dimsize = stride of the source array
+ * destdimsize = stride of the destination array
+ * rep[i] = number of times to repeat dimension i
+ */
+void repmat(char *dest, const char *src, mwSize ndim, mwSize *destdimsize, 
 	    mwSize *dimsize, const mwSize *dims, mwSize *rep) 
 {
-  int d = ndim-1;
+  mwSize d = ndim-1;
   mwSize i;
   mwSize chunk;
+  /*
+    printf("repmat(ndim=%ld,dims=%ld,%ld)\n", ndim,dims[0],dims[1]);
+	*/
   /* copy the first repetition into dest */
   if(d == 0) {
     chunk = dimsize[0];
@@ -71,19 +83,100 @@ void repmat(char *dest, const char *src, int ndim, mwSize *destdimsize,
   memrep(dest,chunk,rep[d]);
 }
 
+/* Experimental version for 2D arrays that copies each column repeatedly.
+ */
+void repmat2(char *dest, const char *src, mwSize ndim, mwSize *destdimsize, 
+	    mwSize *dimsize, const mwSize *dims, mwSize *rep) 
+{
+  mwSize d = ndim-1;
+  mwSize i,j,k;
+  mwSize chunk = dimsize[0];
+  char *p;
+  for(i=0;i<dims[1];i++) {
+    p = dest + i*destdimsize[0];
+    for(j=0;j<rep[1];j++) {
+      for(k=0;k<rep[0];k++) {
+        memcpy(p,src,chunk);
+        p += chunk;
+      }
+      p += destdimsize[0]*(dims[1]-1);
+    }
+    src += chunk;
+  }
+}
+
+void readsizearray(mwSize *dest, const mxArray *ar, mwSize len)
+{
+    mwSize j;
+    
+    switch (mxGetClassID(ar)) {
+        case mxDOUBLE_CLASS:
+        {
+            double *sp = mxGetPr(ar);
+            for (j = 0; j < len; j++)
+                dest[j] = sp[j];
+        } break;
+        case mxSINGLE_CLASS:
+        {
+            float *sp = mxGetData(ar);
+            for (j = 0; j < len; j++)
+                dest[j] = sp[j];
+        } break;
+        case mxUINT8_CLASS:
+        {
+            uint8_T *sp = mxGetData(ar);
+            for (j = 0; j < len; j++)
+                dest[j] = sp[j];
+        } break;
+        case mxUINT16_CLASS:
+        {
+            uint16_T *sp = mxGetData(ar);
+            for (j = 0; j < len; j++)
+                dest[j] = sp[j];
+        } break;
+        case mxUINT32_CLASS:
+        {
+            uint32_T *sp = mxGetData(ar);
+            for (j = 0; j < len; j++)
+                dest[j] = sp[j];
+        } break;
+        case mxINT8_CLASS:
+        {
+            int8_T *sp = mxGetData(ar);
+            for (j = 0; j < len; j++)
+                dest[j] = sp[j];
+        } break;
+        case mxINT16_CLASS:
+        {
+            int16_T *sp = mxGetData(ar);
+            for (j = 0; j < len; j++)
+                dest[j] = sp[j];
+        } break;
+        case mxINT32_CLASS:
+        {
+            int32_T *sp = mxGetData(ar);
+            for (j = 0; j < len; j++)
+                dest[j] = sp[j];
+        } break;
+        default:
+            mexErrMsgTxt("Unknown type in size argument(s) to repmat.");
+    }
+}
+
+
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
   const mxArray *srcmat;
-  int ndim, eltsize;
+  mwSize ndim, eltsize;
   mwSize *dimsize;
   const mwSize *dims;
-  int ndimdest;
+  mwSize ndimdest;
   mwSize *destdims, *destdimsize;
   char *src, *dest;
   mwSize *rep;
-  int i,nrep;
-  int extra_rep = 1;
+  mwSize i,nrep;
+  mwSize extra_rep = 1;
   int empty;
 	double *outp, *inp;
 	mwSize m,n,numel;
@@ -133,10 +226,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
     nrep = mxGetN(prhs[1]);
     if(nrep > ndimdest) ndimdest = nrep;
     rep = (mwSize*)mxCalloc(ndimdest, sizeof(mwSize));
-    for(i=0;i<nrep;i++) {
-      double repv = mxGetPr(prhs[1])[i];
-      rep[i] = (mwSize)repv;
-    }
+    readsizearray(rep, prhs[1], nrep);
+/*     for(i=0;i<nrep;i++) {
+ *       double repv = mxGetPr(prhs[1])[i];
+ *       rep[i] = (mwSize)repv;
+       }   */
 #if ALWAYS_2D
     if(nrep == 1) {
       /* special behavior */
@@ -147,7 +241,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
   }
   else {
     /* concatenate all prhs's */
-    int ri=0;
+    mwSize ri=0;
     nrep = 0;
     for(i=0;i<nrhs-1;i++) {
       nrep += mxGetNumberOfElements(prhs[i+1]);
@@ -155,9 +249,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
     if(nrep > ndimdest) ndimdest = nrep;
     rep = (mwSize*)mxCalloc(ndimdest, sizeof(mwSize));
     for(i=0;i<nrhs-1;i++) {
-      double *p = mxGetPr(prhs[i+1]);
-      int j, sz = mxGetNumberOfElements(prhs[i+1]);
-      for(j=0;j<sz;j++) rep[ri++] = (mwSize)p[j];
+      mwSize sz = mxGetNumberOfElements(prhs[i+1]);
+      readsizearray(rep+ri, prhs[i+1], sz);
+      ri += sz;
+      /* for(j=0;j<sz;j++) rep[ri++] = (mwSize)p[j]; */
     }
   }
   for(i=nrep;i<ndimdest;i++) rep[i] = 1;

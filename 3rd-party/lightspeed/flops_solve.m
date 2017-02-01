@@ -18,8 +18,8 @@ if n == m
 		f = flops_chol(n) + 2*flops_solve_tri(n,m,c);
 	else
 		% invert using LU decomposition
-		% L has unit diagonal so n divisions are avoided when back-substituting
-		f = flops_lu(n) + 2*flops_solve_tri(n,m,c) - n*flops_div;
+		% L has unit diagonal so no divisions are needed when back-substituting L
+		f = flops_lu(n) + 2*flops_solve_tri(n,m,c) - n*c*flops_div;
   end
 elseif n > m
   % this comes from Ax=b, x = (A'*A)\(A'*b)

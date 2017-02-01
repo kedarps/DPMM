@@ -17,7 +17,7 @@ end
 
 % run it once to load the definition
 repmat(1,1,1);
-if 0
+if 1
   %x = rand(300,1);
   x = rand(10,1);
   niter = floor(1000000/prod(size(x)));
@@ -31,17 +31,18 @@ if 0
 end
 
 if 0
-  fprintf('old repmat:');
-  tic; for i = 1:niter xrepmat(x',n,1); end; toc
-  fprintf('new repmat:');
-  tic; for i = 1:niter repmat(x',n,1); end; toc
+  tic; for i = 1:niter xrepmat(x',n,1); end; t0=toc;
+  fprintf('old repmat: %g\n',t0);
+  tic; for i = 1:niter repmat(x',n,1); end; t=toc;
+  fprintf('new repmat: %g (%g times faster)\n',t,t0/t);
 end
 
-if 0
-  fprintf('old repmat:');
-  tic; for i = 1:niter xrepmat(x,n,1); end; toc
-  fprintf('new repmat:');
-  tic; for i = 1:niter repmat(x,n,1); end; toc
+if 1
+	fprintf('repmat(rand(%g,%g),%g,1), %g times\n',rows(x),cols(x),n,niter);
+  tic; for i = 1:niter xrepmat(x,n,1); end; t0=toc;
+  fprintf('old repmat: %g\n',t0);
+  tic; for i = 1:niter repmat(x,n,1); end; t=toc;
+  fprintf('new repmat: %g (%g times faster)\n',t,t0/t);
 end
 
 if 0
@@ -73,7 +74,7 @@ end
 if 1
   % test on large matrix
   b = rand(10240,1);
-  n = 1;
+  n = 10;
 	%n = 1;
 	niter = 1000;
 	iters = 1:niter;
@@ -92,11 +93,18 @@ if 1
 		fprintf('ones: %g (%g times faster)\n',t2,t0/t2);
 	end
 end
-if 0
-	b = rand(10240,1);
-	niter = 10240;
-  tic; for i=1:niter, b+0; end; toc
-  tic; for i=1:niter, a=b+0; end; toc
-  tic; for i=1:niter, b+0; end; toc
-  tic; for i=1:niter, a=b+0; end; toc
+if 1
+	m = 256*16;
+	for n=[8 16 32 64]
+		b = rand(n,n);
+		niter = 8;
+		iters = 1:niter;
+		r = m/n;
+		fprintf('repmat(rand(%g,%g),%g,%g), %g times:\n',rows(b),cols(b),r,r,niter);
+		tic; for i=iters, a0=xrepmat(b,r,r); end; t0=toc;
+		fprintf('old repmat: %g\n',t0); 
+		tic; for i=iters, a=repmat(b,r,r); end; t=toc;
+		assert(all(all(a0 == a)));
+		fprintf('new repmat: %g (%g times faster)\n',t,t0/t);
+	end
 end

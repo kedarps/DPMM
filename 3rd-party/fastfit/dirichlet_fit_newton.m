@@ -1,4 +1,4 @@
-function [a,run] = dirichlet_fit_newton(data,a)
+function [a,run] = dirichlet_fit_newton(data,a,bar_p)
 % DIRICHLET_FIT_NEWTON   Maximum-likelihood Dirichlet distribution.
 %
 % Same as DIRICHLET_FIT but uses the Newton iteration described in
@@ -8,16 +8,19 @@ function [a,run] = dirichlet_fit_newton(data,a)
 
 show_progress = (nargout > 1);
 
-bar_p = mean(log(data));
-[N,K] = size(data);
-addflops(numel(data)*(flops_exp + 1));
+%[N,K] = size(data);
+if nargin < 3
+  bar_p = mean(log(data));
+  addflops(numel(data)*(flops_exp + 1));
+end
+K = length(bar_p);
 if nargin < 2
   a = dirichlet_moment_match(data);
   %s = dirichlet_initial_s(a,bar_p);
   %a = s*a/sum(a);
 end
 
-old_e = N*dirichlet_logProb_fast(a, bar_p);
+old_e = dirichlet_logProb_fast(a, bar_p);
 lambda = 0.1;
 run.e = [];
 for iter = 1:100
@@ -34,14 +37,14 @@ for iter = 1:100
     hg = hessian_times_gradient(a, g, lambda);
     addflops(2*K);
     if all(hg < a)
-      run.e(iter) = N*dirichlet_logProb_fast(a-hg, bar_p);
+      run.e(iter) = dirichlet_logProb_fast(a-hg, bar_p);
       addflops(2);
       if(run.e(iter) > old_e)
-	old_e = run.e(iter);
-	a = a - hg;
-	lambda = lambda/10;
-	addflops(K+1);
-	break
+				old_e = run.e(iter);
+				a = a - hg;
+				lambda = lambda/10;
+				addflops(K+1);
+				break
       end
     end
     lambda = lambda*10;
@@ -52,7 +55,7 @@ for iter = 1:100
     end
   end
   if nargout > 1
-%    run.flops(iter) = flops;
+    run.flops(iter) = flops;
   end
   if abort
     %disp('Search aborted')

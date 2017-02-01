@@ -18,7 +18,7 @@ function color_plot(x,colors,varargin)
 % Written by Tom Minka and Charles Sutton
 
 args = makestruct(varargin);
-default_args = struct('ColorBar',0);
+default_args = struct('ColorBar',0,'MarkerSize',6);
 args = setfields(default_args,args);
 
 if nargin < 2
@@ -34,7 +34,7 @@ end
 [c,q] = cut_quantile(x(:,3),nlevels);
 for lev = 1:nlevels
   i = find(c == lev);
-  plot(x(i,1),x(i,2),'o','Color',colors(lev,:),'MarkerFaceColor',colors(lev,:));
+  plot(x(i,1),x(i,2),'o','Color',colors(lev,:),'MarkerFaceColor',colors(lev,:),'MarkerSize',args.MarkerSize);
   hold on
 end
 hold off
